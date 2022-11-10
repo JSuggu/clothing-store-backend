@@ -3,14 +3,6 @@ const app = express();
 const routes = require ("./routes/routes");
 const sequelize = require ("./controllers/db-connection");
 
-//TABLAS DE LA BASE DE DATOS IMPORTADAS
-const Users = require("./models/Users"); 
-const UsersRole = require("./models/UsersRole"); 
-const Clothes = require("./models/Clothes"); 
-const ClothesColor = require("./models/ClothesColor"); 
-const ClothesType = require("./models/ClothesType"); 
-
-
 //MIDDLEWARES
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
