@@ -36,7 +36,6 @@ const Clothes = sequelize.define("clothes", {
             }
         }
     }
-
 });
 
 module.exports = Clothes;

@@ -5,97 +5,91 @@ const Clothes = require("../models/Clothes");
 const ClothesColor = require("../models/ClothesColor"); 
 const ClothesType = require("../models/ClothesType");
 
+//Conjunto que uso para verificar en los condicionales si se ingreso algun tipo de dato que no es valido
+const invalidData = new Set([undefined, null, NaN, ""]);
+
 const queries = {
     //COLORES DE LAS ROPAS
     colors: async function(req, res){
-        const id = req.params.id;
-
-        //Condicional para verificar si se paso un id como parametro, si no se paso un id; devuelvo todos los colores de la ropa.
-        if(id == null || id == "" || id == undefined){
-            const allColors = await ClothesColor.findAll();
-            return res.send({allColors});
-        }
-
-        const color = await ClothesColor.findAll({
-            where: {
-                id: id
-            }
-        })
-        return res.send({color});
+        const allColors = await ClothesColor.findAll();
+        return res.status(200).send({allColors});
     },
 
     addColor: async function(req, res){
         const name = req.body.name;
 
-        if(name == null || name == "")
-            return res.send({message: "no ha ingresado ningun color"});
+        if(invalidData.has(name))
+            return res.status(400).send({message: "no ha ingresado ningun color"});
 
         //Creo el color y lo inserto en la tabla "clothes_color" en la base de datos;
         const newColor = await ClothesColor.create({
-            name: name
+            name: name,
         })
 
-        return res.send({newColor, message:"color añadido correctamente"})
+        return res.status(201).send({newColor, message:"color añadido correctamente"})
     },
 
     //TIPOS DE ROPA
     types: async function(req, res){
-        const id = req.params.id;
-
-        //Condicional para verificar si se paso un id como parametro, si no se paso un id; devuelvo todos los tipos de ropa.
-        if(id == null || id == "" || id == undefined){
-            const allTypes = await ClothesType.findAll();
-            return res.send({allTypes});
-        }
-
-        const type = await ClothesType.findAll({
-            where: {
-                id: id
-            }
-        })
-        return res.send({type});
+        const allTypes = await ClothesType.findAll();
+        return res.status(200).send({allTypes});
     },
 
     addType: async function(req, res){
         const name = req.body.name;
 
-        if(name == null || name == "")
-            return res.send({message: "no ha ingresado ningun tipo de ropa"});
+        if(invalidData.has(name))
+            return res.status(400).send({message: "no ha ingresado ningun tipo de ropa"});
 
         //Creo el tipo de ropa y lo inserto en la tabla "clothes_type" en la base de datos;
         const newType = await ClothesType.create({
             name: name
         })
         
-        return res.send({newType, message:"tipo de ropa añadido correctamente"})
+        return res.status(201).send({newType, message:"tipo de ropa añadido correctamente"})
     },
 
-
     //PRODUCTOS
-    products: function(req, res){
-        
+    products: async function(req, res){
+        const allProducts = await Clothes.findAll();
+        return res.status(200).send({allProducts});
     },
 
     //Completar esta funcion para color y tipo representen un id de sus respectivas tablas
     addProductos: async function(req, res){
-        const {name, price, color, type} = req.body;
+        const {name, price} = req.body;
+        let {color, type} = req.body;
 
-        if(name == "" || name == null || price == "" || price == "null")
-            return res.send({message: "El producto debe tener un nombre y un precio"});
+        if(invalidData.has(name) || invalidData.has(price))
+            return res.status(400).send({message: "El producto debe tener un nombre y un precio"});
 
-        
+        //Condiciales que verifican si el admin ingreso un color o un tipo de ropa valido,
+        //si es verdadero hace una consulta a la tabla de color y tipo de ropa y obtiene el id al que hacen referencia
+        if(!invalidData.has(color)){
+            color = (await ClothesColor.findOne({
+                where:{
+                    name: color
+                }
+            })).id
+        }
+
+        if(!invalidData.has(type)){
+            type = (await ClothesType.findOne({
+                where:{
+                    name: type
+                }
+            })).id
+        }
 
         const newProduct = await Clothes.create({
             name: name,
             price: price,
-            color: color,
-            type: type
+            color_id: color,
+            type_id: type
         })
 
-        return res.send({newProduct, message: "producto añadido correctamente"});
+        return res.status(201).send({newProduct, message: "producto añadido correctamente"});
     }
-
-
 }
 
 module.exports = queries;

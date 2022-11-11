@@ -13,6 +13,7 @@ const ClothesColor = sequelize.define("clothes_color", {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
         validator: {
             notNull: {
                 msg: "El campo no puede estar vacio"
