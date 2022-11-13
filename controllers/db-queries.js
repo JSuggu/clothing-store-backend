@@ -1,10 +1,11 @@
-const bcryptjs = require("bcrypt");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const Users = require("../models/Users"); 
 const UsersRole = require("../models/UsersRole"); 
 const Clothes = require("../models/Clothes"); 
 const ClothesColor = require("../models/ClothesColor"); 
 const ClothesType = require("../models/ClothesType");
-const { customers } = require("./user-permissions");
+const getKey = require("./users-keys");
 
 //Conjunto que uso para verificar en los condicionales si se ingreso algun tipo de dato que no es valido
 const invalidData = new Set([undefined, null, NaN, ""]);
@@ -52,7 +53,20 @@ const queries = {
 
     //PARA LOS PRODUCTOS
     products: async function(req, res){
-        const allProducts = await Clothes.findAll();
+        const allProducts = await Clothes.findAll({
+            include: [
+                {
+                    model: ClothesColor,
+                    attributes: ["name"]
+                },
+
+                {
+                    model: ClothesType,
+                    attributes: ["name"]
+                }
+            ],
+            attributes: ["name", "price"]
+        });
         return res.status(200).send({allProducts});
     },
 
@@ -111,7 +125,13 @@ const queries = {
     },
 
     users: async function(req, res){
-        const allUsers = await Users.findAll();
+        const allUsers = await Users.findAll({
+            include: {
+                model: UsersRole,
+                attributes: ["name"]
+            },
+            attributes: ["name", "user_name", "email", "password"]
+        });
         return res.status(200).send({allUsers});
     },
 
@@ -120,7 +140,7 @@ const queries = {
         const {name, userName, email, password} = req.body;
         let rol = req.body.rol;
 
-        const encryptedPassword = await bcryptjs.hash(password, 8);
+        const encryptedPassword = await bcrypt.hash(password, 8);
 
         if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password) || invalidData.has(rol))
             return res.status(400).send({message: "Los valores no pueden ser nulos"});
@@ -146,7 +166,7 @@ const queries = {
     registerUser: async function(req, res){
         const {name, userName, email, password} = req.body;
 
-        const encryptedPassword = await bcryptjs.hash(password, 8);
+        const encryptedPassword = await bcrypt.hash(password, 8);
 
         if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password))
             return res.status(400).send({message: "Los valores no pueden ser nulos"});
@@ -169,7 +189,28 @@ const queries = {
     },
 
     login: async function(req, res){
+        const {userName, password} = req.body;
+        if(invalidData.has(userName) || invalidData.has(password))
+            return res.status(401).send({message: "El usuario o la contraseña son incorrectos"});
 
+        const user = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name"]
+            },
+            where: {
+                user_name: userName,
+            },
+            attributes: ["name", "user_name", "email", "password"]
+        });
+
+        if((await bcrypt.compare(password, user.password)) || password == user.password){
+            const key = getKey(user.users_role.name);
+            const token = jwt.sign(user.toJSON(), key);
+            return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
+        }
+
+        return res.status(401).send({message: "El usuario la contraseña son incorrectos"});
     }
 }
 

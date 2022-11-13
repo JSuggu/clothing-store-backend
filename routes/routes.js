@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const verifyToken = require("../controllers/verify-token");
 const routesQueries = require("../controllers/db-queries");
 
 //RUTAS PARA USUARIOS
 router.get("/users", routesQueries.users);
 router.post("/check-in", routesQueries.registerUser); //para cuando los clientes se registren
-router.post("/add/user", routesQueries.addUser); //para que el admin principal agregue usuarios
+router.post("/add/user", verifyToken.developer, routesQueries.addUser); //para que el developer agregue usuarios
 router.post("/login", routesQueries.login);
 router.put("/modify/name/:id");
 router.put("/modify/user-name/:id");
