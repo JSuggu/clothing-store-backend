@@ -4,30 +4,30 @@ const verifyToken = require("../controllers/verify-token");
 const routesQueries = require("../controllers/db-queries");
 
 //RUTAS PARA USUARIOS
-router.get("/users", routesQueries.users);
+router.get("/users", verifyToken.admin, routesQueries.users);
 router.post("/check-in", routesQueries.registerUser); //para cuando los clientes se registren
 router.post("/add/user", verifyToken.developer, routesQueries.addUser); //para que el developer agregue usuarios
 router.post("/login", routesQueries.login);
-router.put("/modify/name/:id");
-router.put("/modify/user-name/:id");
-router.put("/modify/password/:id");
-router.put("/modify/email/:id");
-router.delete("/delete/users");
+router.put("/modify/name/:id?", verifyToken.customer, );
+router.put("/modify/user-name/:id?", verifyToken.customer, );
+router.put("/modify/password/:id?", verifyToken.customer, );
+router.put("/modify/email/:id?", verifyToken.customer, );
+router.delete("/delete/user/:id?", verifyToken.customer, );
 
 
 //RUTAS PARA PRODUCTOS
 router.get("/products", routesQueries.products);
-router.post("/add/products", routesQueries.addProductos);
-router.put("/modify/food");
-router.delete("/delete/food/:id");
+router.post("/add/products", verifyToken.admin, routesQueries.addProductos);
+router.put("/modify/food/:id", verifyToken.admin, );
+router.delete("/delete/food/:id", verifyToken.admin, );
 
-//RUTAS CREAR COLORES, TIPOS DE ROPA y ROLES DE USUARIOS
-router.post("/add/users-rol", routesQueries.addRol);
-router.get("/rols", routesQueries.rol);
-router.post("/add/clothes-color", routesQueries.addColor);
-router.get("/colors", routesQueries.colors);
-router.post("/add/clothes-type", routesQueries.addType);
-router.get("/types", routesQueries.types);
+//RUTAS CREAR ROLES DE USUARIOS, COLORES Y TIPOS DE ROPA
+router.post("/add/user-rol", verifyToken.developer,routesQueries.addRol);
+router.get("/roles", verifyToken.admin, routesQueries.roles);
+router.post("/add/clothes-color", verifyToken.admin, routesQueries.addColor);
+router.get("/colors", verifyToken.admin, routesQueries.colors);
+router.post("/add/clothes-type", verifyToken.admin, routesQueries.addType);
+router.get("/types", verifyToken.admin, routesQueries.types);
 
 module.exports = router;
 

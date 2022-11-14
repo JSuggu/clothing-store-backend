@@ -65,7 +65,7 @@ const queries = {
                     attributes: ["name"]
                 }
             ],
-            attributes: ["name", "price"]
+            attributes: ["id", "name", "price"]
         });
         return res.status(200).send({allProducts});
     },
@@ -107,9 +107,9 @@ const queries = {
     },
 
     //PARA LOS USUARIOS
-    rol: async function(req, res){
-        const allRol = await UsersRole.findAll();
-        return res.status(200).send({allRol});
+    roles: async function(req, res){
+        const allRoles = await UsersRole.findAll();
+        return res.status(200).send({allRoles});
     },
 
     addRol: async function(req, res){
@@ -130,9 +130,9 @@ const queries = {
                 model: UsersRole,
                 attributes: ["name"]
             },
-            attributes: ["name", "user_name", "email", "password"]
+            attributes: ["id", "name", "user_name", "email", "password"]
         });
-        return res.status(200).send({allUsers});
+        return res.status(200).send({allUsers, token: req.decoded});
     },
 
     //consulta para que el admin o desarrollador agregue un nuevo usuario
@@ -201,17 +201,28 @@ const queries = {
             where: {
                 user_name: userName,
             },
-            attributes: ["name", "user_name", "email", "password"]
+            attributes: ["id", "name", "user_name", "email", "password"]
         });
 
         if((await bcrypt.compare(password, user.password)) || password == user.password){
             const key = getKey(user.users_role.name);
-            const token = jwt.sign(user.toJSON(), key);
+            const token = jwt.sign(user.toJSON(), key, {expiresIn: "7d"});
             return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
         }
 
         return res.status(401).send({message: "El usuario la contraseña son incorrectos"});
-    }
+    },
+
+    //consultas para hacer modificaciones a los datos del usuario
+    /*
+    modifyName: async function(req, res){
+        const token = req.decoded;
+        const id = req.params.id;
+        // devuelve undefined si no se envia un id
+        console.log(token);
+        console.log(id);
+        res.send("ok")
+    */
 }
 
 module.exports = queries;
