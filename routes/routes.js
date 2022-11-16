@@ -12,14 +12,14 @@ router.put("/modify/names/:id?", verifyToken.customer, routesQueries.modifyNames
 router.put("/modify/user-name/:id?", verifyToken.customer, routesQueries.modifyUserName);
 router.put("/modify/password/:id?", verifyToken.customer, routesQueries.modifyPassword);
 router.put("/modify/email/:id?", verifyToken.customer, routesQueries.modifyEmail);
-router.delete("/delete/user/:id?", verifyToken.customer, );
+router.delete("/delete/user/:id?", verifyToken.customer, routesQueries.deleteUser);
 
 
 //RUTAS PARA PRODUCTOS
 router.get("/products", routesQueries.products);
-router.post("/add/products", verifyToken.admin, routesQueries.addProductos);
-router.put("/modify/products/:id", verifyToken.admin, routesQueries.modifyProducts);
-router.delete("/delete/food/:id", verifyToken.admin, );
+router.post("/add/product", verifyToken.admin, routesQueries.addProduct);
+router.put("/modify/product/:id", verifyToken.admin, routesQueries.modifyProduct);
+router.delete("/delete/product/:id", verifyToken.admin, routesQueries.deleteProduct);
 
 //RUTAS CREAR ROLES DE USUARIOS, COLORES Y TIPOS DE ROPA
 router.post("/add/user-rol", verifyToken.developer,routesQueries.addRole);

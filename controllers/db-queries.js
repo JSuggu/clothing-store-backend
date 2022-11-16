@@ -71,7 +71,7 @@ const queries = {
     },
 
     //Completar esta funcion para color y tipo representen un id de sus respectivas tablas
-    addProductos: async function(req, res){
+    addProduct: async function(req, res){
         const {name, price} = req.body;
         let {color, type} = req.body;
 
@@ -114,7 +114,7 @@ const queries = {
         return res.status(201).send({newProduct, message: "Producto añadido correctamente"});
     },
 
-    modifyProducts: async function(req, res){
+    modifyProduct: async function(req, res){
         const {name, price} = req.body;
         let {color, type} = req.body;
         const token = req.decoded;
@@ -168,7 +168,28 @@ const queries = {
         return res.status(201).send({productUpdated, message:"Producto actulizado correctamente"});
     },
 
+    deleteProduct: async function(req, res){
+        const token = req.decoded;
+        const id = req.params.id;
+
+        if(token.users_role.priority > 2)
+            return res.status(403).send({message:"No tiene los permisos para eliminar productos"});
+
+        const productDeleted = await Clothes.destroy({
+            where: {
+                id: id
+            }
+        });
+
+        if(productDeleted == 0)
+            return res.status(404).send({message:"El producto que esta intentando eliminar no exite"});
+        
+        return res.status(200).send({productDeleted, message:"El producto ha sido eliminado"});
+    },
+
     //PARA LOS USUARIOS
+    //Cuando se compara la prioridad de los usuarios, si "X > Y" quiere decir que X tiene menor prioridad que Y,
+    //esto es asi porque el valor 1 representa la prioridad mas alta y mientras mas aumenta este valor menor es la prioridad.
     roles: async function(req, res){
         const allRoles = await UsersRole.findAll();
         return res.status(200).send({allRoles});
@@ -194,6 +215,7 @@ const queries = {
             },
             attributes: ["id", "name", "user_name", "email", "password"]
         });
+
         return res.status(200).send({allUsers});
     },
 
@@ -273,13 +295,13 @@ const queries = {
         if(invalidData.has(user))
             return res.status(404).send({message:"El usuario o la contraseña son incorrectos"});
 
-        if(!(await bcrypt.compare(password, user.password)))
+        if(!await bcrypt.compare(password, user.password))
             return res.status(401).send({message: "El usuario o la contraseña son incorrectos"});
         
         const key = getKey(user.users_role.name);
         const token = jwt.sign(user.toJSON(), key, {expiresIn: "7d"});
-        return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
 
+        return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
     },
 
     //consultas para hacer modificaciones a los datos del usuario
@@ -318,16 +340,16 @@ const queries = {
         if(invalidData.has(userToModify))
             return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
 
-        if(tokenRole.priority < userToModify.users_role.priority){
-            const userUpdated = await Users.update({name: names}, {
-                where: {
-                    id: id
-                }
-            });
-            return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
-        }
-        
-        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+        if(tokenRole.priority > userToModify.users_role.priority)
+            return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+            
+        const userUpdated = await Users.update({name: names}, {
+            where: {
+                id: id
+            }
+        });
+
+        return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
     },
 
     //Modificar nombre de usuario
@@ -366,16 +388,16 @@ const queries = {
         if(invalidData.has(userToModify))
             return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
 
-        if(tokenRole.priority < userToModify.users_role.priority){
-            const userUpdated = await Users.update({user_name: userName}, {
-                where: {
-                    id: id
-                }
-            });
-            return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado correctamente"});
-        }
-        
-        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+        if(tokenRole.priority > userToModify.users_role.priority)
+            return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+            
+        const userUpdated = await Users.update({user_name: userName}, {
+            where: {
+                id: id
+            }
+        });
+
+        return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado correctamente"});
     },
 
     modifyPassword: async function(req, res){
@@ -387,7 +409,9 @@ const queries = {
         if(invalidData.has(oldPassword) || invalidData.has(newPassword))
             return res.status(400).send({message: "Debe ingresar su contraseña actual y la nueva contraseña"});
         
-        if(!bcrypt.compare(oldPassword, token.password))
+        //Esta validacion solo sirve cuando un cliente esta intentado cambiar su contraseña,
+        //ya que cuando lo quiere hacer un admin o un dev 
+        if(!await bcrypt.compare(oldPassword, token.password))
             return res.status(401).send({message:"Su contraseña actual no coincide con la que se encuentra en la base de datos"});
         
         if(invalidData.has(id)){
@@ -418,17 +442,17 @@ const queries = {
         if(invalidData.has(userToModify))
             return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
 
-        if(tokenRole.priority < userToModify.users_role.priority){
-            const password = await bcrypt.hash(newPassword, 8);
-            const userUpdated = await Users.update({password: password}, {
-                where: {
-                    id: id
-                }
-            });
-            return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
-        }
-        
-        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+        if(tokenRole.priority > userToModify.users_role.priority)
+            return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+            
+        const password = await bcrypt.hash(newPassword, 8);
+        const userUpdated = await Users.update({password: password}, {
+        where: {
+                id: id
+            }
+        });
+
+        return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
     },
 
     //Modificar email del usuario
@@ -467,19 +491,57 @@ const queries = {
         if(invalidData.has(userToModify))
             return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
 
-        if(tokenRole.priority < userToModify.users_role.priority){
-            const userUpdated = await Users.update({email: email}, {
-                where: {
-                    id: id
-                }
-            });
-            return res.status(201).send({userUpdated, message:"Email actualizado correctamente"});
-        }
-        
-        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+        if(tokenRole.priority > userToModify.users_role.priority)
+            return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+            
+        const userUpdated = await Users.update({email: email}, {
+            where: {
+                id: id
+            }
+        });
+
+       return res.status(201).send({userUpdated, message:"Email actualizado correctamente"});    
     },
 
+    deleteUser: async function(req, res){
+        const token = req.decoded;
+        const id = req.params.id;
 
+        if(invalidData.has(id)){
+            const userDeleted = await Users.destroy({
+                where: {
+                    id: token.id
+                }
+            }); 
+            return res.status(200).send({userDeleted, message: "Usuario eliminado"});
+        }
+
+        const roleToken = token.users_role;
+
+        const userToDelete = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name", "priority"]
+            },
+            where: {
+                id:id
+            }
+        });
+
+        if(invalidData.has(userToDelete))
+            return res.status(400).send({message: "El usuario que esta intentando eliminar no existe"});
+
+        if(roleToken.priority > userToDelete.users_role.priority)
+            return res.status(403).send({message: "No tiene los permisos necesarios para modificar este usuario"});
+
+        const userDeleted = await Users.destroy({
+            where: {
+                id: id
+            }
+        });
+
+        return res.status(200).send({userDeleted, message: "Usuario eliminado"});
+    }
 }
 
 module.exports = queries;
