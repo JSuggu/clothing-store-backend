@@ -81,19 +81,27 @@ const queries = {
         //Condiciales que verifican si el admin ingreso un color o un tipo de ropa valido,
         //si es verdadero hace una consulta a la tabla de color y tipo de ropa y obtiene el id al que hacen referencia
         if(!invalidData.has(color)){
-            color = (await ClothesColor.findOne({
+            color = await ClothesColor.findOne({
                 where:{
                     name: color
                 }
-            })).id
+            });
+
+            if(!invalidData.has(color)){
+                color = color.id;
+            }
         }
 
         if(!invalidData.has(type)){
-            type = (await ClothesType.findOne({
+            type = await ClothesType.findOne({
                 where:{
                     name: type
                 }
-            })).id
+            })
+
+            if(!invalidData.has(type)){
+                type = type.id;
+            }
         }
 
         const newProduct = await Clothes.create({
@@ -106,13 +114,67 @@ const queries = {
         return res.status(201).send({newProduct, message: "Producto añadido correctamente"});
     },
 
+    modifyProducts: async function(req, res){
+        const {name, price} = req.body;
+        let {color, type} = req.body;
+        const token = req.decoded;
+        const id = req.params.id;
+
+        if(token.users_role.priority > 2)
+            return res.status(403).send({message:"El usuario no tiene los permisos necesario"});
+
+        if(invalidData.has(name) || invalidData.has(price))
+            return res.status(400).send({message:"El producto debe tener un nombre y un precio"})
+
+        if(!invalidData.has(color)){
+            color = await ClothesColor.findOne({
+                where:{
+                    name: color
+                }
+            });
+    
+            if(!invalidData.has(color)){
+                color = color.id;
+            }
+        }
+    
+        if(!invalidData.has(type)){
+            type = await ClothesType.findOne({
+                where:{
+                    name: type
+                    }
+            })
+    
+            if(!invalidData.has(type)){
+                type = type.id;
+            }
+        }
+    
+        const productUpdated = await Clothes.update({
+            name: name,
+            price: price,
+            color_id: color,
+            type_id: type,
+            }, {
+                where: {
+                    id: id
+                }
+            });
+
+        
+        if(productUpdated == 0)
+            return res.status(404).send({message: "El producto que intento modifcar no existe"});
+
+        return res.status(201).send({productUpdated, message:"Producto actulizado correctamente"});
+    },
+
     //PARA LOS USUARIOS
     roles: async function(req, res){
         const allRoles = await UsersRole.findAll();
         return res.status(200).send({allRoles});
     },
 
-    addRol: async function(req, res){
+    addRole: async function(req, res){
         const name = req.body.name;
 
         if(invalidData.has(name))
@@ -128,35 +190,38 @@ const queries = {
         const allUsers = await Users.findAll({
             include: {
                 model: UsersRole,
-                attributes: ["name"]
+                attributes: ["name", "priority"]
             },
             attributes: ["id", "name", "user_name", "email", "password"]
         });
-        return res.status(200).send({allUsers, token: req.decoded});
+        return res.status(200).send({allUsers});
     },
 
     //consulta para que el admin o desarrollador agregue un nuevo usuario
     addUser: async function (req, res){
         const {name, userName, email, password} = req.body;
-        let rol = req.body.rol;
+        let role = req.body.role;
 
+        if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password) || invalidData.has(role))
+            return res.status(400).send({message: "Los valores no pueden ser nulos"});
+        
         const encryptedPassword = await bcrypt.hash(password, 8);
 
-        if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password) || invalidData.has(rol))
-            return res.status(400).send({message: "Los valores no pueden ser nulos"});
-
-        const rolId = (await UsersRole.findOne({
+        role = await UsersRole.findOne({
             where: {
-                name: rol
+                name: role
             }
-        })).id;
+        });
+
+        if(invalidData.has(role))
+            return res.status(404).send({message:"El Usuario no pudo agregarse porque el rol que intento asignarsele no existe"});
 
         const newUser = await Users.create({
             name: name,
             user_name: userName,
             email: email,
             password: encryptedPassword,
-            rol_id: rolId
+            role_id: role.id
         });
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
@@ -171,7 +236,7 @@ const queries = {
         if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password))
             return res.status(400).send({message: "Los valores no pueden ser nulos"});
 
-        const rol = (await UsersRole.findOne({
+        const role = (await UsersRole.findOne({
             where: {
                 name: "customer"
             }
@@ -182,7 +247,7 @@ const queries = {
             user_name: userName,
             email: email,
             password: encryptedPassword,
-            rol_id: rol
+            role_id: role
         });
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
@@ -190,13 +255,14 @@ const queries = {
 
     login: async function(req, res){
         const {userName, password} = req.body;
+
         if(invalidData.has(userName) || invalidData.has(password))
             return res.status(401).send({message: "El usuario o la contraseña son incorrectos"});
 
         const user = await Users.findOne({
             include: {
                 model: UsersRole,
-                attributes: ["name"]
+                attributes: ["name", "priority"]
             },
             where: {
                 user_name: userName,
@@ -204,25 +270,216 @@ const queries = {
             attributes: ["id", "name", "user_name", "email", "password"]
         });
 
-        if((await bcrypt.compare(password, user.password)) || password == user.password){
-            const key = getKey(user.users_role.name);
-            const token = jwt.sign(user.toJSON(), key, {expiresIn: "7d"});
-            return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
-        }
+        if(invalidData.has(user))
+            return res.status(404).send({message:"El usuario o la contraseña son incorrectos"});
 
-        return res.status(401).send({message: "El usuario la contraseña son incorrectos"});
+        if(!(await bcrypt.compare(password, user.password)))
+            return res.status(401).send({message: "El usuario o la contraseña son incorrectos"});
+        
+        const key = getKey(user.users_role.name);
+        const token = jwt.sign(user.toJSON(), key, {expiresIn: "7d"});
+        return res.status(200).send({user: user, token: token, message: "Usuario logeado correctamente"});
+
     },
 
     //consultas para hacer modificaciones a los datos del usuario
-    /*
-    modifyName: async function(req, res){
+    modifyNames: async function(req, res){
         const token = req.decoded;
+        const names = req.body.names;
         const id = req.params.id;
-        // devuelve undefined si no se envia un id
-        console.log(token);
-        console.log(id);
-        res.send("ok")
-    */
+
+        if(invalidData.has(names))
+            return res.status(400).send({message: "Debe ingresar algun nombre"});
+        
+        if(invalidData.has(id)){
+            const userId = token.id;
+            const userUpdated = await Users.update({name: names}, {
+                where: {
+                    id: userId
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Nombres actualizados correctamente"});
+        }
+
+        const tokenRole = token.users_role;
+
+        //consulta a la base de datos para obtener el rol del usuario que quiero modificar,
+        //esto es para que los admin no puedan modificar los datos de otros admin o de los dev.
+        const userToModify = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name", "priority"]
+            },
+            where: {
+                id: id
+            }
+        });
+
+        if(invalidData.has(userToModify))
+            return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
+
+        if(tokenRole.priority < userToModify.users_role.priority){
+            const userUpdated = await Users.update({name: names}, {
+                where: {
+                    id: id
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
+        }
+        
+        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+    },
+
+    //Modificar nombre de usuario
+    modifyUserName: async function(req, res){
+        const token = req.decoded;
+        const userName = req.body.userName;
+        const id = req.params.id;
+
+        if(invalidData.has(userName))
+            return res.status(400).send({message: "Debe ingresar algun nombre"});
+        
+        if(invalidData.has(id)){
+            const userId = token.id;
+            const userUpdated = await Users.update({user_name: userName}, {
+                where: {
+                    id: userId
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado actualizado correctamente"});
+        }
+
+        const tokenRole = token.users_role;
+
+        //consulta a la base de datos para obtener el rol del usuario que quiero modificar,
+        //esto es para que los admin no puedan modificar los datos de otros admin o de los dev.
+        const userToModify = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name", "priority"]
+            },
+            where: {
+                id: id
+            }
+        });
+
+        if(invalidData.has(userToModify))
+            return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
+
+        if(tokenRole.priority < userToModify.users_role.priority){
+            const userUpdated = await Users.update({user_name: userName}, {
+                where: {
+                    id: id
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado correctamente"});
+        }
+        
+        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+    },
+
+    modifyPassword: async function(req, res){
+        const token = req.decoded;
+        const oldPassword = req.body.oldPassword;
+        const newPassword = req.body.newPassword;
+        const id = req.params.id;
+
+        if(invalidData.has(oldPassword) || invalidData.has(newPassword))
+            return res.status(400).send({message: "Debe ingresar su contraseña actual y la nueva contraseña"});
+        
+        if(!bcrypt.compare(oldPassword, token.password))
+            return res.status(401).send({message:"Su contraseña actual no coincide con la que se encuentra en la base de datos"});
+        
+        if(invalidData.has(id)){
+            const userId = token.id;
+            const password = await bcrypt.hash(newPassword, 8);
+            const userUpdated = await Users.update({password: password}, {
+                where: {
+                    id: userId
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
+        }
+
+        const tokenRole = token.users_role;
+
+        //consulta a la base de datos para obtener el rol del usuario que quiero modificar,
+        //esto es para que los admin no puedan modificar los datos de otros admin o de los dev.
+        const userToModify = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name", "priority"]
+            },
+            where: {
+                id: id
+            }
+        });
+
+        if(invalidData.has(userToModify))
+            return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
+
+        if(tokenRole.priority < userToModify.users_role.priority){
+            const password = await bcrypt.hash(newPassword, 8);
+            const userUpdated = await Users.update({password: password}, {
+                where: {
+                    id: id
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
+        }
+        
+        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+    },
+
+    //Modificar email del usuario
+    modifyEmail: async function(req, res){
+        const token = req.decoded;
+        const email = req.body.email;
+        const id = req.params.id;
+
+        if(invalidData.has(email))
+            return res.status(400).send({message: "Debe ingresar algun email"});
+        
+        if(invalidData.has(id)){
+            const userId = token.id;
+            const userUpdated = await Users.update({email: email}, {
+                where: {
+                    id: userId
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Email actualizado actualizado correctamente"});
+        }
+
+        const tokenRole = token.users_role;
+
+        //consulta a la base de datos para obtener el rol del usuario que quiero modificar,
+        //esto es para que los admin no puedan modificar los datos de otros admin o de los dev.
+        const userToModify = await Users.findOne({
+            include: {
+                model: UsersRole,
+                attributes: ["name", "priority"]
+            },
+            where: {
+                id: id
+            }
+        });
+
+        if(invalidData.has(userToModify))
+            return res.status(404).send({message:"El usuario que esta intentando modificar no existe"});
+
+        if(tokenRole.priority < userToModify.users_role.priority){
+            const userUpdated = await Users.update({email: email}, {
+                where: {
+                    id: id
+                }
+            });
+            return res.status(201).send({userUpdated, message:"Email actualizado correctamente"});
+        }
+        
+        return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
+    },
+
+
 }
 
 module.exports = queries;

@@ -23,15 +23,30 @@ const UsersRole = sequelize.define("users_role", {
                 msg: "El color no puede contener valores numericos"
             }
         }
+    },
+
+    priority: {
+        type: DataTypes.SMALLINT,
+        allowNull: false,
+        unique: true,
+        validate: {
+            notNull: {
+                msg: "El campo no puede estar vacio"
+            },
+            isNumeric: {
+                args: true,
+                msg: "La prioridad debe tener un valor numerico, siendo 1 el que tiene mayor prioridad"
+            }
+        }
     }
 });
 
 UsersRole.hasMany(Users, {
-    foreignKey: "rol_id",
+    foreignKey: "role_id",
     sourceKey: "id"
 });
 Users.belongsTo(UsersRole, {
-    foreignKey: "rol_id",
+    foreignKey: "role_id",
     targetId: "id"
 });
 
