@@ -12,7 +12,7 @@ const Clothes = sequelize.define("clothes", {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },
@@ -26,7 +26,7 @@ const Clothes = sequelize.define("clothes", {
     price: {
         type: DataTypes.STRING,
         allowNull: false,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },

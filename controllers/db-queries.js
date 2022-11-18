@@ -26,7 +26,9 @@ const queries = {
         //Creo el color y lo inserto en la tabla "clothes_color" en la base de datos;
         const newColor = await ClothesColor.create({
             name: name,
-        })
+        }).catch(err =>{
+            return err.errors;;
+        });
 
         return res.status(201).send({newColor, message:"Color añadido correctamente"})
     },
@@ -46,7 +48,9 @@ const queries = {
         //Creo el tipo de ropa y lo inserto en la tabla "clothes_type" en la base de datos;
         const newType = await ClothesType.create({
             name: name
-        })
+        }).catch(err =>{
+            return err.errors;;
+        });
         
         return res.status(201).send({newType, message:"Tipo de ropa añadido correctamente"})
     },
@@ -109,7 +113,9 @@ const queries = {
             price: price,
             color_id: color,
             type_id: type
-        })
+        }).catch(err =>{
+            return err.errors;;
+        });
 
         return res.status(201).send({newProduct, message: "Producto añadido correctamente"});
     },
@@ -159,6 +165,8 @@ const queries = {
                 where: {
                     id: id
                 }
+            }).catch(err =>{
+                return err.errors;;
             });
 
         
@@ -203,7 +211,10 @@ const queries = {
 
         const newRol = await UsersRole.create({
             name: name
+        }).catch(err =>{
+            return err.errors;;
         });
+
         return res.status(201).send({newRol, message: "Nuevo rol creado"})
     },
 
@@ -213,7 +224,7 @@ const queries = {
                 model: UsersRole,
                 attributes: ["name", "priority"]
             },
-            attributes: ["id", "name", "user_name", "email", "password"]
+            attributes: ["id", "names", "user_name", "email", "password"]
         });
 
         return res.status(200).send({allUsers});
@@ -244,6 +255,8 @@ const queries = {
             email: email,
             password: encryptedPassword,
             role_id: role.id
+        }).catch(err =>{
+            return err.errors;
         });
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
@@ -270,6 +283,8 @@ const queries = {
             email: email,
             password: encryptedPassword,
             role_id: role
+        }).catch(err =>{
+            return err.errors;;
         });
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
@@ -289,7 +304,7 @@ const queries = {
             where: {
                 user_name: userName,
             },
-            attributes: ["id", "name", "user_name", "email", "password"]
+            attributes: ["id", "names", "user_name", "email", "password"]
         });
 
         if(invalidData.has(user))
@@ -319,7 +334,10 @@ const queries = {
                 where: {
                     id: userId
                 }
+            }).catch(err =>{
+                return err.errors;;
             });
+
             return res.status(201).send({userUpdated, message:"Nombres actualizados correctamente"});
         }
 
@@ -347,6 +365,8 @@ const queries = {
             where: {
                 id: id
             }
+        }).catch(err =>{
+            return err.errors;;
         });
 
         return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
@@ -367,7 +387,10 @@ const queries = {
                 where: {
                     id: userId
                 }
+            }).catch(err =>{
+                return err.errors;;
             });
+
             return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado actualizado correctamente"});
         }
 
@@ -395,6 +418,8 @@ const queries = {
             where: {
                 id: id
             }
+        }).catch(err =>{
+            return err.errors;;
         });
 
         return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado correctamente"});
@@ -421,7 +446,10 @@ const queries = {
                 where: {
                     id: userId
                 }
+            }).catch(err =>{
+                return err.errors;;
             });
+
             return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
         }
 
@@ -450,6 +478,8 @@ const queries = {
         where: {
                 id: id
             }
+        }).catch(err =>{
+            return err.errors;;
         });
 
         return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
@@ -470,7 +500,10 @@ const queries = {
                 where: {
                     id: userId
                 }
+            }).catch(err =>{
+                return err.errors;;
             });
+
             return res.status(201).send({userUpdated, message:"Email actualizado actualizado correctamente"});
         }
 
@@ -498,6 +531,8 @@ const queries = {
             where: {
                 id: id
             }
+        }).catch(err =>{
+            return err.errors;;
         });
 
        return res.status(201).send({userUpdated, message:"Email actualizado correctamente"});    

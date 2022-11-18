@@ -14,7 +14,7 @@ const UsersRole = sequelize.define("users_role", {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede estar vacio"
             },

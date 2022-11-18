@@ -9,10 +9,10 @@ const Users = sequelize.define("users", {
         primaryKey: true,
     },
 
-    name: {
+    names: {
         type: DataTypes.STRING,
         allowNull: false,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },
@@ -27,7 +27,7 @@ const Users = sequelize.define("users", {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },
@@ -42,12 +42,11 @@ const Users = sequelize.define("users", {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },
             isEmail: {
-                args: true,
                 msg: "El campo tiene que ser un correo valido"
             }
         }
@@ -56,7 +55,7 @@ const Users = sequelize.define("users", {
     password: {
         type: DataTypes.STRING,
         allowNull: false,
-        validator: {
+        validate: {
             notNull: {
                 msg: "El campo no puede ser nulo"
             }
