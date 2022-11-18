@@ -7,7 +7,7 @@ const routesQueries = require("../controllers/db-queries");
 router.get("/users/:id?", verifyToken.admin, routesQueries.users);
 router.post("/check-in", routesQueries.registerUser); //para cuando los clientes se registren
 router.post("/add/user", verifyToken.developer, routesQueries.addUser); //para que el developer agregue usuarios
-router.post("/login", routesQueries.login);
+router.post("/log-in", routesQueries.login);
 router.put("/modify/names/:id?", verifyToken.customer, routesQueries.modifyNames);
 router.put("/modify/user-name/:id?", verifyToken.customer, routesQueries.modifyUserName);
 router.put("/modify/password/:id?", verifyToken.customer, routesQueries.modifyPassword);

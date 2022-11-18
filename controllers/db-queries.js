@@ -221,10 +221,10 @@ const queries = {
 
     //consulta para que el admin o desarrollador agregue un nuevo usuario
     addUser: async function (req, res){
-        const {name, userName, email, password} = req.body;
+        const {names, userName, email, password} = req.body;
         let role = req.body.role;
 
-        if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password) || invalidData.has(role))
+        if(invalidData.has(names) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password) || invalidData.has(role))
             return res.status(400).send({message: "Los valores no pueden ser nulos"});
         
         const encryptedPassword = await bcrypt.hash(password, 8);
@@ -239,7 +239,7 @@ const queries = {
             return res.status(404).send({message:"El Usuario no pudo agregarse porque el rol que intento asignarsele no existe"});
 
         const newUser = await Users.create({
-            name: name,
+            names: names,
             user_name: userName,
             email: email,
             password: encryptedPassword,
@@ -251,11 +251,11 @@ const queries = {
 
     //consulta para cuando el usuario se registra
     registerUser: async function(req, res){
-        const {name, userName, email, password} = req.body;
+        const {names, userName, email, password} = req.body;
 
         const encryptedPassword = await bcrypt.hash(password, 8);
 
-        if(invalidData.has(name) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password))
+        if(invalidData.has(names) || invalidData.has(userName) || invalidData.has(email) || invalidData.has(password))
             return res.status(400).send({message: "Los valores no pueden ser nulos"});
 
         const role = (await UsersRole.findOne({
@@ -265,7 +265,7 @@ const queries = {
         })).id;
 
         const newUser = await Users.create({
-            name: name,
+            names: names,
             user_name: userName,
             email: email,
             password: encryptedPassword,
@@ -315,7 +315,7 @@ const queries = {
         
         if(invalidData.has(id)){
             const userId = token.id;
-            const userUpdated = await Users.update({name: names}, {
+            const userUpdated = await Users.update({names: names}, {
                 where: {
                     id: userId
                 }
@@ -343,7 +343,7 @@ const queries = {
         if(tokenRole.priority > userToModify.users_role.priority)
             return res.status(403).send({message:"No tiene autorizacion para modificar datos de otros usuarios"});
             
-        const userUpdated = await Users.update({name: names}, {
+        const userUpdated = await Users.update({names: names}, {
             where: {
                 id: id
             }
