@@ -27,8 +27,11 @@ const queries = {
         const newColor = await ClothesColor.create({
             name: name,
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(newColor.name == "SequelizeValidationError")
+            return res.status(400).send({error: newColor.errors, message: "El color de la ropa no pudo añadirse"});
 
         return res.status(201).send({newColor, message:"Color añadido correctamente"})
     },
@@ -49,8 +52,11 @@ const queries = {
         const newType = await ClothesType.create({
             name: name
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(newType.name == "SequelizeValidationError")
+            return res.status(400).send({error: newType.errors, message: "El tipo de ropa no pudo añadirse"});
         
         return res.status(201).send({newType, message:"Tipo de ropa añadido correctamente"})
     },
@@ -114,8 +120,11 @@ const queries = {
             color_id: color,
             type_id: type
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(newProduct.name == "SequelizeValidationError")
+            return res.status(400).send({error: newProduct.errors, message: "El producto no pudo añadirse"});
 
         return res.status(201).send({newProduct, message: "Producto añadido correctamente"});
     },
@@ -166,12 +175,15 @@ const queries = {
                     id: id
                 }
             }).catch(err =>{
-                return err.errors;;
+                return err;
             });
 
         
         if(productUpdated == 0)
             return res.status(404).send({message: "El producto que intento modifcar no existe"});
+        
+        if(productUpdated.name == "SequelizeValidationError")
+            return res.status(400).send({error: productUpdated.errors, message: "El producto no pudo actualizarce"});
 
         return res.status(201).send({productUpdated, message:"Producto actulizado correctamente"});
     },
@@ -212,8 +224,11 @@ const queries = {
         const newRol = await UsersRole.create({
             name: name
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(newRol.name == "SequelizeValidationError")
+            return res.status(400).send({error: newRol.errors, message: "El rol no puedo añadirse"});
 
         return res.status(201).send({newRol, message: "Nuevo rol creado"})
     },
@@ -256,8 +271,11 @@ const queries = {
             password: encryptedPassword,
             role_id: role.id
         }).catch(err =>{
-            return err.errors;
+            return err;
         });
+
+        if(newUser.name == "SequelizeValidationError")
+            return res.status(400).send({error: newUser.errors, message: "El usuario no puedo registrarse"});
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
     },
@@ -284,8 +302,11 @@ const queries = {
             password: encryptedPassword,
             role_id: role
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(newUser.name == "SequelizeValidationError")
+            return res.status(400).send({error: newUser.errors, message: "El usuario no puedo registrarse"});
         
         return res.status(201).send({newUser, message:"Usuario agregado correctamente"});
     },
@@ -335,8 +356,11 @@ const queries = {
                     id: userId
                 }
             }).catch(err =>{
-                return err.errors;;
+                return err;
             });
+
+            if(userUpdated.name == "SequelizeValidationError")
+                return res.status(400).send({error: userUpdated.errors, message: "El nombre no puedo actualizarse"});
 
             return res.status(201).send({userUpdated, message:"Nombres actualizados correctamente"});
         }
@@ -366,8 +390,11 @@ const queries = {
                 id: id
             }
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(userUpdated.name == "SequelizeValidationError")
+                return res.status(400).send({error: userUpdated.errors, message: "El nombre no puedo actualizarse"});
 
         return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
     },
@@ -388,8 +415,11 @@ const queries = {
                     id: userId
                 }
             }).catch(err =>{
-                return err.errors;;
+                return err;
             });
+
+            if(userUpdated.name == "SequelizeValidationError")
+                return res.status(400).send({error: userUpdated.errors, message: "El nombre de usuario no puedo actualizarse"});
 
             return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado actualizado correctamente"});
         }
@@ -419,8 +449,11 @@ const queries = {
                 id: id
             }
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(userUpdated.name == "SequelizeValidationError")
+            return res.status(400).send({error: userUpdated.errors, message: "El nombre de usuario no puedo actualizarse"});
 
         return res.status(201).send({userUpdated, message:"Nombre de usuario actualizado correctamente"});
     },
@@ -447,8 +480,11 @@ const queries = {
                     id: userId
                 }
             }).catch(err =>{
-                return err.errors;;
+                return err;
             });
+
+            if(userUpdated.name == "SequelizeValidationError")
+                return res.status(400).send({error: userUpdated.errors, message: "La contraseña no puedo actualizarse"});
 
             return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
         }
@@ -479,8 +515,11 @@ const queries = {
                 id: id
             }
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(userUpdated.name == "SequelizeValidationError")
+            return res.status(400).send({error: userUpdated.errors, message: "La contraseña no puedo actualizarse"});
 
         return res.status(201).send({userUpdated, message:"Contraseña actualizada correctamente"});
     },
@@ -501,8 +540,11 @@ const queries = {
                     id: userId
                 }
             }).catch(err =>{
-                return err.errors;;
+                return err;
             });
+
+            if(userUpdated.name == "SequelizeValidationError")
+                return res.status(400).send({error: userUpdated.errors, message: "El email no puedo actualizarse"});
 
             return res.status(201).send({userUpdated, message:"Email actualizado actualizado correctamente"});
         }
@@ -532,8 +574,11 @@ const queries = {
                 id: id
             }
         }).catch(err =>{
-            return err.errors;;
+            return err;
         });
+
+        if(userUpdated.name == "SequelizeValidationError")
+            return res.status(400).send({error: userUpdated.errors, message: "El email no puedo actualizarse"});
 
        return res.status(201).send({userUpdated, message:"Email actualizado correctamente"});    
     },

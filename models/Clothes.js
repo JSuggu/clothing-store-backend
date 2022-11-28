@@ -16,9 +16,10 @@ const Clothes = sequelize.define("clothes", {
             notNull: {
                 msg: "El campo no puede ser nulo"
             },
-            isAlpha: {
-                args: true,
-                msg: "El nombre no puede contener caracteres numericos"
+
+            is: {
+                args: [/^[a-zA-Z\s]+$/],
+                msg: "El nombre solo debe tener letras y espacios"
             }
         }
     },
