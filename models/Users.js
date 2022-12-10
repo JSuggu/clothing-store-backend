@@ -10,7 +10,7 @@ const Users = sequelize.define("users", {
     },
 
     names: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(50),
         allowNull: false,
         validate: {
             notNull: {
@@ -24,7 +24,7 @@ const Users = sequelize.define("users", {
     },
 
     user_name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(30),
         allowNull: false,
         unique: true,
         validate: {

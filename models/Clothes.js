@@ -10,7 +10,7 @@ const Clothes = sequelize.define("clothes", {
     },
 
     name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(30),
         allowNull: false,
         validate: {
             notNull: {
@@ -25,7 +25,7 @@ const Clothes = sequelize.define("clothes", {
     },
 
     price: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
             notNull: {

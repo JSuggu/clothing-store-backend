@@ -100,6 +100,8 @@ const queries = {
             if(!invalidData.has(color)){
                 color = color.id;
             }
+        } else {
+            color = null;
         }
 
         if(!invalidData.has(type)){
@@ -112,6 +114,8 @@ const queries = {
             if(!invalidData.has(type)){
                 type = type.id;
             }
+        } else {
+            type = null;
         }
 
         const newProduct = await Clothes.create({
@@ -123,7 +127,7 @@ const queries = {
             return err;
         });
 
-        if(newProduct.name == "SequelizeValidationError")
+        if(newProduct.name == "SequelizeValidationError" || newProduct.name == "SequelizeDatabaseError")
             return res.status(400).send({error: newProduct.errors, message: "El producto no pudo añadirse"});
 
         return res.status(201).send({newProduct, message: "Producto añadido correctamente"});
@@ -147,24 +151,28 @@ const queries = {
                     name: color
                 }
             });
-    
+
             if(!invalidData.has(color)){
                 color = color.id;
-            }
+            } 
+        } else {
+            color = null;
         }
     
         if(!invalidData.has(type)){
             type = await ClothesType.findOne({
                 where:{
                     name: type
-                    }
-            })
+                }
+            });
     
             if(!invalidData.has(type)){
                 type = type.id;
             }
+        } else {
+            type = null;
         }
-    
+
         const productUpdated = await Clothes.update({
             name: name,
             price: price,
@@ -174,16 +182,15 @@ const queries = {
                 where: {
                     id: id
                 }
-            }).catch(err =>{
-                return err;
-            });
+        }).catch(err =>{
+            return err;
+        });
 
-        
         if(productUpdated == 0)
-            return res.status(404).send({message: "El producto que intento modifcar no existe"});
-        
-        if(productUpdated.name == "SequelizeValidationError")
-            return res.status(400).send({error: productUpdated.errors, message: "El producto no pudo actualizarce"});
+            return res.status(404).send({message: "El producto que intento modifcar no existe o ingreso la misma informacion o invalida y no se ha producido ningun cambio"});
+
+        if(productUpdated.name == "SequelizeValidationError" || productUpdated.name == "SequelizeDatabaseError")
+            return res.status(400).send({error: productUpdated.parent, message: "El producto no pudo actualizarce"});
 
         return res.status(201).send({productUpdated, message:"Producto actulizado correctamente"});
     },
@@ -394,7 +401,7 @@ const queries = {
         });
 
         if(userUpdated.name == "SequelizeValidationError")
-                return res.status(400).send({error: userUpdated.errors, message: "El nombre no puedo actualizarse"});
+            return res.status(400).send({error: userUpdated.errors, message: "El nombre no puedo actualizarse"});
 
         return res.status(201).send({userUpdated, message:"Nombres actualizado actualizado correctamente"});
     },

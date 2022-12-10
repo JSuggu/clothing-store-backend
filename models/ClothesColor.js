@@ -11,7 +11,7 @@ const ClothesColor = sequelize.define("clothes_color", {
     },
 
     name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(15),
         allowNull: false,
         unique: true,
         validate: {

@@ -11,7 +11,7 @@ const UsersRole = sequelize.define("users_role", {
     },
 
     name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(15),
         allowNull: false,
         unique: true,
         validate: {

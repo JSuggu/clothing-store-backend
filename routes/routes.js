@@ -22,7 +22,7 @@ router.put("/modify/product/:id", verifyToken.admin, routesQueries.modifyProduct
 router.delete("/delete/product/:id", verifyToken.admin, routesQueries.deleteProduct);
 
 //RUTAS CREAR ROLES DE USUARIOS, COLORES Y TIPOS DE ROPA
-router.post("/add/user-rol", verifyToken.developer,routesQueries.addRole);
+router.post("/add/user-role", verifyToken.developer,routesQueries.addRole);
 router.get("/roles", verifyToken.admin, routesQueries.roles);
 router.post("/add/clothes-color", verifyToken.admin, routesQueries.addColor);
 router.get("/colors", verifyToken.admin, routesQueries.colors);

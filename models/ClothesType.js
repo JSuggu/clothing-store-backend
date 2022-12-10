@@ -11,7 +11,7 @@ const ClothesType = sequelize.define("clothes_type", {
     },
 
     name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(15),
         allowNull: false,
         unique: true,
         validate: {
