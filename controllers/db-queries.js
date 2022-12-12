@@ -6,6 +6,7 @@ const Clothes = require("../models/Clothes");
 const ClothesColor = require("../models/ClothesColor"); 
 const ClothesType = require("../models/ClothesType");
 const getKey = require("./users-keys");
+const sequelize = require("./db-connection");
 
 //Conjunto que uso para verificar en los condicionales si se ingreso algun tipo de dato que no es valido
 const invalidData = new Set([undefined, null, NaN, ""]);
@@ -63,6 +64,16 @@ const queries = {
 
     //PARA LOS PRODUCTOS
     products: async function(req, res){
+        const clotheType = req.params.type;
+        console.log(clotheType);
+        if(!invalidData.has(clotheType) && clotheType != "none"){
+            const allProductsFiltered = await sequelize.query(`SELECT clothes.id, clothes.name, clothes.price, clothes_colors.name as color, clothes_types.name as type FROM clothes
+            INNER JOIN clothes_colors on clothes.color_id = clothes_colors.id
+            INNER JOIN clothes_types on clothes.type_id = clothes_types.id WHERE clothes_types.name = '${clotheType}'`, );
+            
+            return res.status(200).send({allProducts: allProductsFiltered[0]});
+        }
+
         const allProducts = await Clothes.findAll({
             include: [
                 {

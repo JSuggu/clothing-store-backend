@@ -16,7 +16,7 @@ router.delete("/delete/user/:id?", verifyToken.customer, routesQueries.deleteUse
 
 
 //RUTAS PARA PRODUCTOS
-router.get("/products", routesQueries.products);
+router.get("/products/:type?", routesQueries.products);
 router.post("/add/product", verifyToken.admin, routesQueries.addProduct);
 router.put("/modify/product/:id", verifyToken.admin, routesQueries.modifyProduct);
 router.delete("/delete/product/:id", verifyToken.admin, routesQueries.deleteProduct);
