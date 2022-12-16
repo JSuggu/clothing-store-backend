@@ -17,7 +17,6 @@ app.use((req, res, next) => {
 });
 
 //RUTAS Y CONEXION
-
 sequelize.sync();
 app.listen(3000, (req, res) => {
     console.log("servidor iniciado");

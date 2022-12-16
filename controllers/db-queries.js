@@ -12,6 +12,23 @@ const sequelize = require("./db-connection");
 const invalidData = new Set([undefined, null, NaN, ""]);
 
 const queries = {
+    //ELIMINA LA INFORMACION QUE SE ENCUENTRA EN LA BASE DE DATOS Y RESTAURA LA INFORMACION ORIGINAL
+    restoredData: async function(req, res){
+        await sequelize.query(`DELETE FROM clothes_colors; 
+        DELETE FROM clothes_types; 
+        DELETE FROM clothes;
+        DELETE FROM users_roles;
+        DELETE FROM users`);
+        
+        await sequelize.query(`INSERT INTO clothes_colors VALUES (3,'amarillo'),(2,'azul'),(1,'rojo');
+        INSERT INTO clothes_types VALUES (1,'calzado'),(2,'pantalon'),(3,'remera');
+        INSERT INTO clothes VALUES (5,'zapato',2000,NULL,1),(6,'remera a rayas',500,2,3),(7,'zapatillas',2000,1,1),(8,'crocs',1000,2,1),(9,'camiseta manga corta',1000,1,3),(10,'camiseta manga larga',1000,3,3),(11,'pantalon corto jean',1000,2,2),(12,'jean largo',1000,2,2),(13,'joggin largo',1000,2,2),(14,'ojotas',1000,3,1),(15,'camisa de vestir',2000,2,3),(19,'zapato de cuero',3500,NULL,NULL);
+        INSERT INTO users_roles VALUES (1,'developer',1),(2,'admin',2),(3,'customer',3);
+        INSERT INTO users VALUES (1,'desarrollador','developer','developer@gmail.com','$2b$08$LqK3rgTPa2/XyvgEv/UPkO4jw1Fj78oi1WeAeB1f4N2I/0x7sk/ve',1),(2,'administrador','admin','admin@gmail.com','$2b$08$/5vVjfQtiTzYBWT5BI/UQuTi9QZ5FYpD7Xx4wS8rKo31rR3SYkb0a',2),(3,'customer','customer','customer@gmail.com','$2b$08$kMXrxMTrIVm7Al9zK.cBvei3rspheJpN4zfilyCAzlPcHE8lTQqVK',3);`);
+
+        return res.status(201).send({message:"backup realizado correctamente"});
+    },
+
     //COLORES DE LAS ROPAS
     colors: async function(req, res){
         const allColors = await ClothesColor.findAll();
@@ -486,8 +503,8 @@ const queries = {
             return res.status(400).send({message: "Debe ingresar su contraseña actual y la nueva contraseña"});
         
         //Esta validacion solo sirve cuando un cliente esta intentado cambiar su contraseña,
-        //ya que cuando lo quiere hacer un admin o un dev 
-        if(!await bcrypt.compare(oldPassword, token.password))
+        //ya que cuando lo quiere hacer un admin o un dev siempre resulta en falso y nuncan se ejecuta el return
+        if(token.users_role.name == "customer" && !await bcrypt.compare(oldPassword, token.password))
             return res.status(401).send({message:"Su contraseña actual no coincide con la que se encuentra en la base de datos"});
         
         if(invalidData.has(id)){

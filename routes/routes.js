@@ -3,6 +3,9 @@ const router = express.Router();
 const verifyToken = require("../controllers/verify-token");
 const routesQueries = require("../controllers/db-queries");
 
+//RUTA BACKUP
+router.put("/database/backup", routesQueries.restoredData);
+
 //RUTAS PARA USUARIOS
 router.get("/users/:id?", verifyToken.admin, routesQueries.users);
 router.post("/check-in", routesQueries.registerUser); //para cuando los clientes se registren
