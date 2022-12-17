@@ -4,7 +4,7 @@ const verifyToken = require("../controllers/verify-token");
 const routesQueries = require("../controllers/db-queries");
 
 //RUTA BACKUP
-router.put("/database/backup", routesQueries.restoredData);
+router.get("/database/backup", routesQueries.restoredData);
 
 //RUTAS PARA USUARIOS
 router.get("/users/:id?", verifyToken.admin, routesQueries.users);
