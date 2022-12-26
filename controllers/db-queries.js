@@ -82,7 +82,7 @@ const queries = {
     //PARA LOS PRODUCTOS
     products: async function(req, res){
         const clotheType = req.params.type;
-        console.log(clotheType);
+
         if(!invalidData.has(clotheType) && clotheType != "none"){
             const allProductsFiltered = await sequelize.query(`SELECT clothes.id, clothes.name, clothes.price, clothes_colors.name as color, clothes_types.name as type FROM clothes
             INNER JOIN clothes_colors on clothes.color_id = clothes_colors.id

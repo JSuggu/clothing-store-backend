@@ -2,6 +2,7 @@ const express = require ("express");
 const app = express();
 const routes = require ("./routes/routes");
 const sequelize = require ("./controllers/db-connection");
+require("dotenv").config({path:"./.env"});
 
 //MIDDLEWARES
 app.use(express.urlencoded({extended: false}));
@@ -18,7 +19,7 @@ app.use((req, res, next) => {
 
 //RUTAS Y CONEXION
 sequelize.sync();
-app.listen(3000, (req, res) => {
+app.listen(process.env.PORT, (req, res) => {
     console.log("servidor iniciado");
 })
 
