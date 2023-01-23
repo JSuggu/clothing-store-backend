@@ -3,6 +3,11 @@ const router = express.Router();
 const verifyToken = require("../controllers/verify-token");
 const routesQueries = require("../controllers/db-queries");
 
+//RUTA DEL SERVIDOR
+router.get("", (req, res) => {
+    return res.status(200).send();
+})
+
 //RUTA BACKUP
 router.get("/database/backup", routesQueries.restoredData);
 
@@ -23,6 +28,7 @@ router.get("/products/:type?", routesQueries.products);
 router.post("/add/product", verifyToken.admin, routesQueries.addProduct);
 router.put("/modify/product/:id", verifyToken.admin, routesQueries.modifyProduct);
 router.delete("/delete/product/:id", verifyToken.admin, routesQueries.deleteProduct);
+
 
 //RUTAS CREAR ROLES DE USUARIOS, COLORES Y TIPOS DE ROPA
 router.post("/add/user-role", verifyToken.developer,routesQueries.addRole);
